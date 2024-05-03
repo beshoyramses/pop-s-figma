@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useState } from "react";
 import Live from "../components/Live";
-import NavBar from "../components/NavBar";
+import NavBar from "../components/NavBar.tsx";
 import LeftSideBar from "../components/LeftSideBar";
 import RightSideBar from "../components/RightSideBar";
 import { initializeFabric, handleCanvasMouseDown, handleResize, handleCanvasMouseUp, renderCanvas,handleCanvasObjectModified, handleCanvaseMouseMove, handleCanvasSelectionCreated} from "@/lib/canvas";

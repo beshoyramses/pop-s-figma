@@ -10,6 +10,7 @@ const nextConfig = {
     return config;
   },
   images: {
+    domains: ['i.giphy.com', 'liveblocks.io'], // Add 'i.giphy.com' to allow images from Giphy
     remotePatterns: [
       {
         protocol: "https",
