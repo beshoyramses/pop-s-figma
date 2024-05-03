@@ -2,14 +2,14 @@
 
 import { useRef, useEffect, useState } from "react";
 import Live from "../components/Live";
-import NavBar from "../components/NavBar.tsx";
-import LeftSideBar from "../components/LeftSideBar";
+import NavBar from "../components/Navbar";
+import LeftSideBar from "../components/LeftSidebar";
 import RightSideBar from "../components/RightSideBar";
-import { initializeFabric, handleCanvasMouseDown, handleResize, handleCanvasMouseUp, renderCanvas,handleCanvasObjectModified, handleCanvaseMouseMove, handleCanvasSelectionCreated} from "@/lib/canvas";
+import { initializeFabric, handleCanvasMouseDown, handleResize, handleCanvasMouseUp, renderCanvas, handleCanvasObjectModified, handleCanvaseMouseMove, handleCanvasSelectionCreated } from "@/lib/canvas";
 import { fabric } from "fabric";
 import { ActiveElement } from "@/types/type";
 import { useMutation, useRedo, useStorage, useUndo } from "@/liveblocks.config";
-import {defaultNavElement} from "@/constants"
+import { defaultNavElement } from "@/constants"
 import { handleDelete } from "@/lib/key-events";
 import { handleKeyDown } from "@/lib/key-events";
 import { handleImageUpload } from "@/lib/shapes";
@@ -34,15 +34,15 @@ export default function Page() {
     fill: "#aabbcc",
     stroke: "#aabbcc",
   });
-  const syncShapeInStorage = useMutation(({storage}, object) => {
-        if (!object) return;
+  const syncShapeInStorage = useMutation(({ storage }, object) => {
+    if (!object) return;
 
-        const {objectId} = object;
-        const shapeData = object.toJSON();
-        shapeData.objectId = objectId;
+    const { objectId } = object;
+    const shapeData = object.toJSON();
+    shapeData.objectId = objectId;
 
-        const canvasObjects = storage.get('canvasObjects');
-        canvasObjects.set(objectId, shapeData)
+    const canvasObjects = storage.get('canvasObjects');
+    canvasObjects.set(objectId, shapeData)
   }, [])
   const [activeElement, setActiveElement] = useState<ActiveElement>({
     name: "",
@@ -52,23 +52,23 @@ export default function Page() {
 
   const deleteShapeFromStorage = useMutation(({ storage }, objectId) => {
     const canvasObjects = storage.get("canvasObjects");
-    
+
     canvasObjects.delete(objectId)
-},[]);
+  }, []);
 
 
 
-  const deleteAllShapes = useMutation(({storage}) => {
+  const deleteAllShapes = useMutation(({ storage }) => {
     const canvasObjects = storage.get("canvasObjects");
 
     if (!canvasObjects || canvasObjects.size === 0) return true;
 
-    for(let [key,value] of canvasObjects.entries()) {
+    for (let [key, value] of canvasObjects.entries()) {
       canvasObjects.delete(key)
     }
 
     return canvasObjects.size === 0;
-  },[])
+  }, [])
 
   // Function to handle selecting an active element
   const handleActiveElement = (elem: ActiveElement) => {
@@ -78,20 +78,20 @@ export default function Page() {
     switch (elem?.value) {
       case "reset":
         deleteAllShapes();
-        fabricRef.current.clear;
+        fabricRef.current?.clear();
         setActiveElement(defaultNavElement)
         break;
-        case 'delete':
-          handleDelete(fabricRef.current as any, deleteShapeFromStorage)
-          setActiveElement(defaultNavElement)
-          break;
-        case 'image': 
-          imageInputRef.current?.click();
-          isDrawing.current = "false";
-          if (fabricRef.current) {
-            fabricRef.current.isDrawing = 'false';
-          }
-          break;
+      case 'delete':
+        handleDelete(fabricRef.current as fabric.Canvas, deleteShapeFromStorage)
+        setActiveElement(defaultNavElement)
+        break;
+      case 'image':
+        imageInputRef.current?.click();
+        isDrawing.current = false;
+        if (fabricRef.current) {
+          fabricRef.current.isDrawing = false;
+        }
+        break;
       default:
         break;
     }
@@ -159,35 +159,34 @@ export default function Page() {
     }
 
     window.addEventListener("resize", () => {
-      handleResize({ fabricRef });
+      handleResize({ fabricRef: fabricRef.current });
     });
 
-    
+
     window.removeEventListener("resize", () => {
-        handleResize({ fabricRef });
-        canvas.dispose();
-      });
+      handleResize({ fabricRef: fabricRef.current });
+      canvas.dispose();
+    });
 
     window.addEventListener("keydown", (e: any) => {
       handleKeyDown({
         e,
-        canvas: fabricRef.current,
+        canvas: fabricRef.current as fabric.Canvas,
         undo,
         redo,
         syncShapeInStorage,
       })
     })
-    
-      return () => {
-        canvas.dispose()
-      }
+
+    return () => {
+      canvas.dispose()
+    }
   }, [fabricRef]);
 
 
-  
   useEffect(() => {
     renderCanvas({
-      fabricRef,
+      fabricRef: fabricRef.current,
       canvasObjects,
       activeObjectRef,
 
@@ -196,22 +195,22 @@ export default function Page() {
 
   return (
     <main className="h-screen overflow-hidden">
-      <NavBar activeElement={activeElement} handleActiveElement={handleActiveElement} imageInputRef={imageInputRef} handleImageUpload={(e: any) => {e.stopPropagation(); handleImageUpload({
+      <NavBar activeElement={activeElement} handleActiveElement={handleActiveElement} imageInputRef={imageInputRef} handleImageUpload={(e: any) => { e.stopPropagation(); handleImageUpload({
         file: e.target.files[0],
-        canvas: fabricRef as any,
+        canvas: fabricRef.current as fabric.Canvas,
         shapeRef,
         syncShapeInStorage
-      })}}/>
+      }) }} />
       <section className="flex h-full flex-row">
-        <LeftSideBar allShapes={Array.from(canvasObjects)}/>
+        <LeftSideBar allShapes={Array.from(canvasObjects)} />
         <Live canvasRef={canvasRef} />
-        <RightSideBar 
-        elementAttributes={elementAttributes}
-        setElementAttributes={setElementAttributes}
-        fabricRef={fabricRef}
-        isEditingRef={isEditingRef}
-        activeObjectRef={activeObjectRef}
-        syncShapeInStorage={syncShapeInStorage}
+        <RightSideBar
+          elementAttributes={elementAttributes}
+          setElementAttributes={setElementAttributes}
+          fabricRef={fabricRef}
+          isEditingRef={isEditingRef}
+          activeObjectRef={activeObjectRef}
+          syncShapeInStorage={syncShapeInStorage}
         />
       </section>
     </main>
