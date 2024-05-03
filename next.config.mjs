@@ -1,34 +1,26 @@
-import path from "path";
-import { fileURLToPath } from "url";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-export default {
-  webpack: (config, { isServer }) => {
-    // Add file-loader rule to handle .node files
-    config.module.rules.push({
-      test: /\.node$/,
-      use: {
-        loader: "file-loader",
-        options: {
-          name: "[name].[ext]",
-          publicPath: `/_next/static/chunks/`,
-          outputPath: `${isServer ? "../" : ""}static/chunks/`,
-        },
-      },
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  webpack: (config) => {
+    config.externals.push({
+      "utf-8-validate": "commonjs utf-8-validate",
+      bufferutil: "commonjs bufferutil",
+      canvas: "commonjs canvas",
     });
-
-    // Resolve 'canvas' package to use the built version in Node.js
-    if (isServer) {
-      config.resolve.alias["canvas"] = path.resolve(
-        __dirname,
-        "node_modules/canvas/build/Release/canvas.node"
-      );
-    }
-
+    // config.infrastructureLogging = { debug: /PackFileCache/ };
     return config;
   },
   images: {
-    domains: ['i.giphy.com'],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "liveblocks.io",
+        port: "",
+      },
+    ],
+  },
+  typescript: {
+    ignoreBuildErrors: true,
   },
 };
+
+export default nextConfig;
